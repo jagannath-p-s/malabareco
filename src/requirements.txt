@@ -1,0 +1,207 @@
+# Malabar Eco Solutions - Waste Management System Requirements
+
+## 1. Project Overview
+
+Malabar Eco Solutions requires a streamlined waste management application focused primarily on financial tracking and cashflow management. The system tracks the full lifecycle of waste materials, from collection to processing and final sale or disposal. The application emphasizes simple interfaces and clear financial reporting for non-technical users who may not use it frequently.
+
+The core business revolves around collecting rejected waste from Local Self-Government Institutions (LSGIs), processing it at Material Recovery Facilities (MRFs), and then either selling the segregated materials to recycling companies or sending non-recyclable waste for alternative disposal. Each transaction generates either revenue or expenses, and maintaining accurate records of these financial flows is the primary purpose of the system.
+
+## 2. Business Workflow
+
+### 2.1 Current Operational Process
+
+Malabar Eco Solutions follows a well-defined operational process with three primary transaction types:
+
+**Rejected Waste Inward Entry:** The company collects rejected waste from LSGIs, with waste arriving at MRFs via company vehicles. Each collection includes details like voucher numbers, date, LSGI name, vehicle number, quantity, rate, total amount, and labor charges for loading/unloading. This represents an expense as the company pays for collecting the waste.
+
+**Segregated Waste Outward Entry:** Once received, waste undergoes segregation into valuable categories like HM (Hard Mix plastics) and LD (Low Density plastics). The company sells these materials to recyclers, recording buyer information, material types, quantities, rates, and total value. Labor costs for segregation and bailing are also tracked. These transactions generate revenue.
+
+**Rejected Waste Outward Entry:** Non-recyclable waste is either sold to cement companies as Alternative Fuel and Raw Material (AFR) or disposed of through specialized channels. Transactions may be revenue-generating (when sold) or expense-generating (when paying for disposal). The system accommodates both scenarios.
+
+
+## 3. Core Requirements
+
+### 3.1 User Management
+
+- Simple authentication system for administrators and staff using atble we created call users
+- Email and password-based login
+- Basic password management
+- Straightforward permissions structure based on role
+
+### 3.2 Financial Transaction Recording
+
+Three primary transaction forms matching current Excel templates:
+
+**Rejected Waste Inward Entry (Collection):**
+- Record waste collection from LSGIs to godowns 
+- Track voucher numbers, dates, quantities, rates, amounts, labor charges
+- Auto-calculate totals based on quantities and rates
+- Support for collection agents with commission tracking , sometimes there are no colection agents
+- Ability to customize labor amounts for different staff members
+- Split labor charges equally by default with option to customize
+
+**Segregated Waste Outward Entry (Sales):**
+- Record sales of segregated materials to recycling companies
+- Support multiple material types within a single transaction (e.g., HM and LD plastics) 
+- Calculate amounts based on quantities and rates
+- Track associated labor charges for segregation and bailing
+- Labor distribution to staff with custom amounts
+
+**Rejected Waste Outward Entry (Sales/Disposal):**
+- Record either sales of AFR waste (revenue) or disposal (expense)
+- Support both revenue and expense scenarios
+- Track labor charges for bailing and loading
+
+### 3.3 Payment Tracking
+
+- Track payments for all transactions
+- like there are two accounts one for godowns which is used to pay staff salary , expenses etc and one more account for profits
+- Record payment date, method, reference numbers
+- Link payments to specific transactions
+
+### 3.4 Inventory Management
+
+- Basic inventory tracking by location and material type
+- Automatic updates when materials are received or dispatched
+- Simple quantity tracking rather than complex warehouse management
+- Ability to view current inventory levels
+
+### 3.5 Expense Tracking
+
+- Record general operational expenses
+- Specify expense date, category, amount, recipient
+- Associate expenses with specific locations
+- Add notes for context
+
+### 3.6 Financial Reporting
+
+- Revenue summary by transaction type, material, period
+- Expense summary by transaction type, category, period
+- Outstanding payments (receivables and payables)
+- Profit and loss calculations
+- Inventory valuation
+- Exportable reports to PDF or Excel
+
+## 4. Technical Requirements
+
+### 4.1 Database Structure
+
+Using Supabase with tables for:
+- profiles: User information with email-based authentication
+- locations: Collection points, MRFs, and buyers
+- materials: Types of waste materials handled
+- rejected_waste_inward: Records of waste collections
+- rejected_waste_inward_labor: Labor distributions for inward entries
+- segregated_waste_outward: Records of segregated waste sales
+- segregated_waste_outward_items: Material items for outward entries
+- segregated_waste_outward_labor: Labor distributions for segregated waste
+- rejected_waste_outward: Records of rejected waste sales/disposal
+- rejected_waste_outward_labor: Labor distributions for rejected waste
+- inventory: Current stock at each location
+- payments: Payment records linked to transactions
+- staff_ledger: Track payments owed to staff for labor
+
+Database triggers automatically update inventory and staff ledgers when transactions are recorded.
+
+### 4.2 User Interface
+
+- Forms matching familiar Excel layouts
+- Large, clearly labeled input fields
+- Error prevention through validation
+- Minimal required fields to reduce complexity
+- Mobile-friendly design
+- Consistent navigation and layout
+
+### 4.3 Development Approach
+
+- Frontend: React with TypeScript, built using Vite
+- Styling: Tailwind CSS with Shadcn UI components
+- Backend: Supabase for database and authentication
+- State Management: Simple React Query or Context API
+- Form Handling: React Hook Form for validation
+
+## 5. Implementation Priority
+
+**Phase 1: Core Financial Transaction Recording**
+- Three main transaction forms matching Excel templates
+- Basic user authentication
+- Simple dashboard showing recent transactions
+
+**Phase 2: Financial Management**
+- Payment recording and tracking
+- Outstanding payment monitoring
+- Basic financial reports
+
+**Phase 3: Supporting Features**
+- Inventory tracking
+- Expense management
+- Enhanced reporting
+
+**Phase 4: Refinements**
+- Mobile optimizations
+- Export capabilities
+- User experience improvements based on feedback
+
+## 6. Additional Requirements
+
+### 6.1 Labor Allocation System Enhancements
+
+- Staff labor allocation must be integrated with the `staff_ledger` table
+- When labor is allocated in any transaction (inward, segregated outward, rejected outward), corresponding entries should be created in the staff ledger
+- For each staff labor allocation, record:
+  - Staff member ID
+  - Labor type (loading, segregation, bailing)
+  - Amount owed
+  - Reference to the originating transaction
+  also when they are paid off using payment you should reduce the amount owed to them from staff ledger 
+
+### 6.2 Commission Handling
+
+- Collection agents can receive commissions for facilitating waste collection
+- Commission rates are stored in the `locations` table for agents
+- Commission amounts should be calculated automatically based on quantity and commission rate
+- Commission records should be tracked in the system
+- Support commission payments alongside labor payments
+
+### 6.3 Voucher Number System
+
+- Auto-generate voucher numbers following format patterns:
+  - RW-YYYYMMDD-XXXX for rejected waste inward
+  - SW-YYYYMMDD-XXXX for segregated waste outward
+  - RWO-YYYYMMDD-XXXX for rejected waste outward
+- Vouchers should be editable in case manual input is needed
+- System should show preview of auto-generated voucher before saving
+
+### 6.4 Material Item Handling for Segregated Waste
+
+- Support for multiple material types in a single segregated waste outward entry
+- Each material line item includes material type, quantity, rate, and amount
+- Total quantity and amount should be calculated from the sum of all items
+
+### 6.5 NET Profit Calculation
+
+- For each transaction type, calculate and display net profit:
+  - For rejected waste inward: (Amount received - labor costs - commission costs)
+  - For segregated waste outward: (Sales amount - segregation labor - bailing labor)
+  - For rejected waste outward: (Sales amount - labor costs) or (-disposal costs - labor costs)
+
+### 6.6 Error Prevention and Validation
+
+- Implement strict validation for all financial calculations to ensure accuracy
+- Ensure database CHECK constraints are properly managed in application code
+- Provide clear error messages when validation fails
+- Prevent submission of incomplete or invalid data
+
+### 6.7 Expanded UI Requirements
+
+- Tables should have expandable rows to show details of transactions
+- Filters for searching and sorting transactions by date, location, material type
+- Batch operations for related transactions
+- Support for printing vouchers and reports
+- Dashboard with key financial metrics and recent transactions
+
+## 7. Conclusion
+
+This waste management system is designed with a clear focus on financial tracking and cashflow management for Malabar Eco Solutions. By prioritizing simplicity and maintaining consistency with existing processes, the system will provide significant improvements in data management and financial visibility while remaining accessible to all staff members regardless of technical expertise.
+
+The success of this system will be measured by its ability to accurately track the company's waste management transactions, provide clear financial insights, and simplify day-to-day record-keeping while requiring minimal training for users transitioning from the current Excel-based system.
